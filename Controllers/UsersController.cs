@@ -1,22 +1,17 @@
+using System.Security.Cryptography;
+using System.Text;
 using API.Data;
+using API.DTOs;
 using API.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Controllers;
 
-[ApiController]
-[Route("api/[controller]")]
-
-public class UsersController : ControllerBase
+public class UsersController(DataContext context) : BaseApiController
 {
-    private readonly DataContext context;
-
-    public UsersController(DataContext context)
-    {
-        this.context = context;
-    }
-
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<IEnumerable<AppUser>>> GetUsers()
     {
@@ -24,6 +19,7 @@ public class UsersController : ControllerBase
         return users;
     }
 
+    [Authorize]
     [HttpGet("{id:int}")]
     public async Task<ActionResult<AppUser>> GetUser(int id)
     {
@@ -31,7 +27,5 @@ public class UsersController : ControllerBase
         if (user == null) return NotFound();
         return user;
     }
-
-
 
 }
