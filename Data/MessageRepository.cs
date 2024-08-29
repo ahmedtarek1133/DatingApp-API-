@@ -11,7 +11,7 @@ namespace API.Data;
 
 public class MessageRepository(DataContext context, IMapper mapper) : IMessageRepository
 {
-     public void AddGroup(Group group)
+    public void AddGroup(Group group)
     {
         context.Groups.Add(group);
     }
@@ -74,7 +74,8 @@ public class MessageRepository(DataContext context, IMapper mapper) : IMessageRe
 
     public async Task<IEnumerable<MessageDto>> GetMessageThread(string currentUsername, string recipientUsername)
     {
-        var messages = await context.Messages
+        // var messages = await context.Messages
+            var query = context.Messages
             // .Include(x => x.Sender).ThenInclude(x => x.Photos)
             // .Include(x => x.Recipient).ThenInclude(x => x.Photos)
             .Where(x => 
@@ -86,10 +87,12 @@ public class MessageRepository(DataContext context, IMapper mapper) : IMessageRe
                     && x.RecipientUsername == recipientUsername
             )
             .OrderBy(x => x.MessageSent)
-            .ProjectTo<MessageDto>(mapper.ConfigurationProvider)
-            .ToListAsync();
+            // .ProjectTo<MessageDto>(mapper.ConfigurationProvider)
+            // .ToListAsync();
+            .AsQueryable();
 
-        var unreadMessages = messages.Where(x => x.DateRead == null && 
+        // var unreadMessages = messages.Where(x => x.DateRead == null && 
+        var unreadMessages = query.Where(x => x.DateRead == null && 
             x.RecipientUsername == currentUsername).ToList();
 
         if (unreadMessages.Count != 0)
@@ -100,7 +103,8 @@ public class MessageRepository(DataContext context, IMapper mapper) : IMessageRe
 
         // return mapper.Map<IEnumerable<MessageDto>>(messages);
         
-        return messages;
+    
+        return await query.ProjectTo<MessageDto>(mapper.ConfigurationProvider).ToListAsync();
     }
 
     public void RemoveConnection(Connection connection)
@@ -108,9 +112,9 @@ public class MessageRepository(DataContext context, IMapper mapper) : IMessageRe
         context.Connections.Remove(connection);
     }
 
-    public async Task<bool> SaveAllAsync()
-    {
-        return await context.SaveChangesAsync() > 0;
-    }
+    // public async Task<bool> SaveAllAsync()
+    // {
+    //     return await context.SaveChangesAsync() > 0;
+    // }
     
 }
